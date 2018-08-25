@@ -1,0 +1,123 @@
+---
+title: "Proposal: Speed Dating Prediction"
+author: "Xin Qu, NetID: xinq2; Biruo Zhao, NetID: biruoz2; Chen Ling, NetID: ling10; Luwei Zhang, NetID: luwei2"
+output:
+  html_document: 
+    toc: yes
+  pdf_document: default
+urlcolor: cyan
+---
+
+***
+## Overview
+
+We propose to create a linear regression model that could be used to predict the popularity rating of a speed-dating participant based on selected variables.
+
+This project will incorporate the following concepts covered in the lecture:
+
+- Variable selection
+- Model building
+- Analysis of Variance
+- Model Diagnostics
+- Molde evaluation
+- Data analysis and interpretation
+
+## Description of dataset
+
+This dataset was compiled by Columbia Business School professors Ray Fisman and Sheena Iyengar for their paper Gender Differences in Mate Selection: Evidence From a Speed Dating Experiment.
+
+Data was gathered from participants in experimental speed dating events from 2002-2004. During the events, the attendees would have a four minute "first date" with every other participant of the opposite sex. At the end of their four minutes, participants were asked if they would like to see their date again. They were also asked to rate their date on six attributes: Attractiveness, Sincerity, Intelligence, Fun, Ambition, and Shared Interests.
+
+The dataset also includes questionnaire data gathered from participants at different points in the process. These fields include: demographics, dating habits, self-perception across key attributes, beliefs on what others find valuable in a mate, and lifestyle information. 
+
+There are 8378 observations with 195 variables in the dataset. 
+
+At current stage, below are the vairables we are interested in: 
+
+**numerical response**
+
+- `like_o`: rate of like of speed-dating partner
+
+**numerical predictors**
+
+- `age_o`: Age of speed-dating partner
+
+- `attr_o`: rate of Attractiveness of speed-dating partner
+
+- `sinc_o`: rate of Sincerity of speed-dating partner
+
+- `intel_o`: rate of Intelligence of speed-dating partner
+
+- `fun_o`: rate of Fun of speed-dating partner
+
+- `amb_o`: rate of Ambition of speed-dating partner
+
+- `shar_o`: rate of Shared Interests of speed-dating partner
+
+**categotical predictors**
+
+- `gender`: gender of speed-dating partner, 0 stands for male and 1 stands for female
+
+- `samerace`: whether same race of partner and participant, 0 stands for different and 1 stands for same
+
+- `dec_o`: decision to see partner again, 0 stands for No and 1 stands for Yes
+
+- `match`: a match occurs when both participant and partner check "Yes" for decision
+
+
+## Statement of Interest
+
+We want to explore what factors influence participants' rating of how they like their partners. 
+
+- Will participants have an age preference?
+- Is attractiveness driving how people like their partners?
+- Is sincerity driving how people like their partners?
+- Is intellingence driving how people like their partners?
+- Is being fun driving how people like their partners?
+- Is ambition driving how people like their partners?
+- Is shared-interests driving how people like their partners?
+- Will participants tend to rate partner of same race higher?
+- How gender relates to the rating of like?
+- Is decision to see the partner again a strong indicator of rating of like?
+- Is match a strong indicator of rating of like?
+
+## Dataset Source
+
+This project is inspired by [Kaggle](https://www.kaggle.com/annavictoria/speed-dating-experiment/home).
+
+## Load the data
+```{r}
+rawdata = read.csv('Speed Dating Data.csv')
+str(rawdata)
+```
+```{r}
+rawdata$gender = as.factor(rawdata$gender)
+rawdata$samerace = as.factor(rawdata$samerace)
+rawdata$dec_o = as.factor(rawdata$dec_o)
+rawdata$match = as.factor(rawdata$match)
+```
+data preview
+```{r}
+head(rawdata[, c("like_o","age_o", "attr_o", "sinc_o", "intel_o", "fun_o","amb_o","shar_o", "gender","samerace","dec_o","match")], 10)
+```
+```{r, eval= FALSE}
+plot(lm(like_o ~ age_o+attr_o+sinc_o+intel_o+fun_o+amb_o+shar_o+gender+samerace+dec_o+match, data = rawdata))
+```
+
+##Data cleaning (generate useful data containing repsonse and predictors)
+
+```{r}
+library(readr)
+library(lmtest)
+library(faraway)
+selected_data = subset(rawdata, select = 
+                     c("age_o","attr_o","sinc_o","intel_o","fun_o","amb_o","shar_o","like_o","gender","samerace","match","dec_o"))
+selected_data = selected_data[complete.cases(selected_data), ] # find complete data
+str(selected_data)
+full_model1 = lm(like_o ~ . , data = selected_data)
+summary(full_model1)
+full_model2 = lm(like_o ~ attr_o + sinc_o + intel_o + fun_o + shar_o + dec_o, data = selected_data)
+summary(full_model2)
+vif(full_model2)
+```
+
